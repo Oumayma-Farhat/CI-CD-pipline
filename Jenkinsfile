@@ -25,4 +25,12 @@ pipeline {
                 
             }
         }
+
+        stage('Package code') {
+            steps {
+                sh "zip -r myapp.zip ./* -x '*.git*'"
+                sh "ls -lart"
+            }
+        }
+ 
     }
