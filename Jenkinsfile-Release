@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = 'oumeymafarhat/flaskapp'
+        IMAGE_TAG = "${IMAGE_NAME}:${env.GIT_COMMIT}"
+        KUBECONFIG = credentials('kubeconfig-credentials-id')
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
+        GH_TOKEN = credentials('github-access-token')
+    }
+
+
+
+    stages {
+
+        stage("Check for Git Tag") {
+            steps {
+                script {
+                    def tag = sh(returnStdout: true, script: "git tag --contains").trim()
+
+                    if (tag != null) {
+                        env.GIT_TAG = tag
+                    } else {
+                        env.GIT_TAG = ''
+                    }
+                    echo "GIT_TAG is set to: ${env.GIT_TAG}"
+                    env.IMAGE_TAG_RELEASE = "${IMAGE_NAME}:${GIT_TAG}"
+                }
+            }
+        }
+
+    }
+}
