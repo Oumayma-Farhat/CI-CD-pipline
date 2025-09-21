@@ -62,11 +62,43 @@ pipeline {
         stage("Build and Deploy") {
             when {
                 expression {
-                    return env.GIT_TAG != "" /* Only run if GIT_TAG is not empty*/
+                    return env.GIT_TAG != "" /*Only run if GIT_TAG is not empty*/
+                }
+            }
+
+            stages {
+
+                stage('Docker Login') {
+                    steps {
+                        withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                        sh 'echo ${PASSWORD} | docker login -u ${USERNAME} --password-stdin'}
+                        echo 'Login successfully'
+                    }
+                }
+                stage('Build') {
+                    steps {
+                        sh 'docker build -t ${IMAGE_TAG} -t ${IMAGE_TAG_RELEASE} .'
+                        echo "Docker image build successfully"
+                        sh 'docker image ls'
+                    }
+                }
+
+                stage('Push Image') {
+                    steps {
+                        sh 'docker push --all-tags ${IMAGE_NAME}'
+                        echo "Docker image push successfully"
+                    }
+                }
+
+                stage('Deploy') {
+                    steps {
+                        sh 'kubectl config use-context user@prod.us-east-1.eksctl.io'
+                        sh 'kubectl config current-context'
+                        sh "kubectl set image deployment/flask-app flask-app=${IMAGE_TAG_RELEASE}"
+                    }
                 }
             }
         }
     }
 }
-
             
