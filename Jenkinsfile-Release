@@ -30,5 +30,12 @@ pipeline {
             }
         }
 
+    stage('Setup') {
+            steps {
+                script {
+                    sh "poetry install --with dev"
+                }
+            }
+        }
     }
 }
