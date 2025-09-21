@@ -37,5 +37,26 @@ pipeline {
                 }
             }
         }
+        
+    stage('Create Release') {
+            when {
+                expression {
+                    return env.GIT_TAG == "" 
+                }
+            }
+            steps {
+                script {
+                    
+                    sh 'printenv'
+                    def tag = sh(returnStdout: true, script: "poetry run semantic-release version").trim()
+                    echo "${tag}"
+
+                    sh "poetry run semantic-release publish"
+
+
+                    echo "Published new tag: ${tag}"
+                }
+            }
+        }
     }
 }
