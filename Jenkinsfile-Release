@@ -30,15 +30,15 @@ pipeline {
             }
         }
 
-    stage('Setup') {
+       stage('Setup') {
             steps {
                 script {
                     sh "poetry install --with dev"
                 }
             }
         }
-        
-    stage('Create Release') {
+
+        stage('Create Release') {
             when {
                 expression {
                     return env.GIT_TAG == "" 
@@ -58,5 +58,15 @@ pipeline {
                 }
             }
         }
+
+        stage("Build and Deploy") {
+            when {
+                expression {
+                    return env.GIT_TAG != "" /* Only run if GIT_TAG is not empty*/
+                }
+            }
+        }
     }
 }
+
+            
